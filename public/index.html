@@ -75,6 +75,27 @@
 
     button[type="submit"].loading { opacity: 0.5; pointer-events: none; }
 
+    #result {
+  display: none;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 56px 40px;
+  width: 100%;
+  max-width: 520px;
+  text-align: center;
+}
+
+#resultIcon { font-size: 44px; display: block; margin-bottom: 16px; }
+#resultTitle { font-size: 20px; margin-bottom: 12px; }
+#resultMessage { font-size: 15px; line-height: 1.6; margin-bottom: 28px; }
+
+.back-btn {
+  padding: 9px 22px;
+  cursor: pointer;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: transparent;
+}
 
   </style>
 </head>
@@ -150,5 +171,69 @@
 
   </form>
 
+  <div id="result">
+    <span id="resultIcon"></span>
+    <div id="resultTitle"></div>
+    <p id="resultMessage"></p>
+    <button class="back-btn" onclick="resetForm()">← New Application</button>
+  </div>
+
+<script>
+  const outcomes = {
+    'Approved':      { icon: '✅', title: 'Approved',      message: 'Your account has been created.',              css: 'approved' },
+    'Manual Review': { icon: '🔍', title: 'Under Review',  message: 'We will be in touch shortly.',                css: 'review'   },
+    'Deny':          { icon: '❌', title: 'Denied',         message: 'Sorry, your application was not successful.', css: 'denied'   }
+  };
+
+  document.getElementById('applyForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    btn.textContent = 'Processing…';
+    btn.classList.add('loading');
+
+    const formData = {
+      name_first:          document.getElementById('name_first').value.trim(),
+      name_last:           document.getElementById('name_last').value.trim(),
+      email_address:       document.getElementById('email_address').value.trim(),
+      birth_date:          document.getElementById('birth_date').value.trim(),
+      document_ssn:        document.getElementById('document_ssn').value.trim(),
+      address_line_1:      document.getElementById('address_line_1').value.trim(),
+      address_line_2:      document.getElementById('address_line_2').value.trim(),
+      address_city:        document.getElementById('address_city').value.trim(),
+      address_state:       document.getElementById('address_state').value.trim().toUpperCase(),
+      address_postal_code: document.getElementById('address_postal_code').value.trim(),
+    };
+
+    try {
+      const response = await fetch('/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      const data = await response.json();
+      showResult(data.outcome);
+    } catch (err) {
+      showResult('Error');
+    }
+  });
+
+  function showResult(outcome) {
+    const content = outcomes[outcome] || { icon: '⚠️', title: 'Something Went Wrong', message: 'Please try again.', css: 'denied' };
+    document.getElementById('resultIcon').textContent    = content.icon;
+    document.getElementById('resultTitle').textContent   = content.title;
+    document.getElementById('resultMessage').textContent = content.message;
+    document.getElementById('applyForm').style.display   = 'none';
+    document.getElementById('result').style.display      = 'block';
+  }
+
+  function resetForm() {
+    document.getElementById('applyForm').reset();
+    const btn = document.getElementById('submitBtn');
+    btn.textContent = 'Submit Application';
+    btn.classList.remove('loading');
+    document.getElementById('applyForm').style.display = 'block';
+    document.getElementById('result').style.display    = 'none';
+  }
+</script>  
 </body>
 </html>
