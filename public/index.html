@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bank — Apply</title>
+</head>
+<body>
+
+  <h1>Bank Application</h1>
+
+  <form id="applyForm">
+    <label>First Name</label>
+    <input type="text" id="name_first" required />
+
+    <label>Last Name</label>
+    <input type="text" id="name_last" required />
+
+    <label>Email Address</label>
+    <input type="email" id="email_address" required />
+
+    <label>Date of Birth</label>
+    <input type="text" id="birth_date" placeholder="YYYY-MM-DD" required />
+
+    <label>Social Security No.</label>
+    <input type="text" id="document_ssn" maxlength="9" required />
+
+    <label>Address Line 1</label>
+    <input type="text" id="address_line_1" required />
+
+    <label>Address Line 2</label>
+    <input type="text" id="address_line_2" />
+
+    <label>City</label>
+    <input type="text" id="address_city" required />
+
+    <label>State</label>
+    <input type="text" id="address_state" maxlength="2" required />
+
+    <label>ZIP Code</label>
+    <input type="text" id="address_postal_code" required />
+
+    <label>Country</label>
+    <input type="text" value="US" disabled />
+
+    <button type="submit" id="submitBtn">Submit Application</button>
+  </form>
+
+  <div id="result">
+    <span id="resultIcon"></span>
+    <div id="resultTitle"></div>
+    <p id="resultMessage"></p>
+    <button onclick="resetForm()">← New Application</button>
+  </div>
+
+<script>
+  const outcomes = {
+    'Approved':      { icon: '✅', title: 'Approved',      message: 'Your account has been created.',             css: 'approved' },
+    'Manual Review': { icon: '🔍', title: 'Under Review',  message: 'We will be in touch shortly.',               css: 'review'   },
+    'Deny':          { icon: '❌', title: 'Denied',         message: 'Sorry, your application was not successful.', css: 'denied'  }
+  };
+
+  document.getElementById('applyForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    btn.textContent = 'Processing…';
+
+    const formData = {
+      name_first:          document.getElementById('name_first').value.trim(),
+      name_last:           document.getElementById('name_last').value.trim(),
+      email_address:       document.getElementById('email_address').value.trim(),
+      birth_date:          document.getElementById('birth_date').value.trim(),
+      document_ssn:        document.getElementById('document_ssn').value.trim(),
+      address_line_1:      document.getElementById('address_line_1').value.trim(),
+      address_line_2:      document.getElementById('address_line_2').value.trim(),
+      address_city:        document.getElementById('address_city').value.trim(),
+      address_state:       document.getElementById('address_state').value.trim().toUpperCase(),
+      address_postal_code: document.getElementById('address_postal_code').value.trim(),
+    };
+
+    try {
+      const response = await fetch('/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      const data = await response.json();
+      showResult(data.outcome);
+    } catch (err) {
+      showResult('Error');
+    }
+  });
+
+  function showResult(outcome) {
+    const content = outcomes[outcome] || { icon: '⚠️', title: 'Something Went Wrong', message: 'Please try again.', css: 'denied' };
+    document.getElementById('resultIcon').textContent    = content.icon;
+    document.getElementById('resultTitle').textContent   = content.title;
+    document.getElementById('resultMessage').textContent = content.message;
+    document.getElementById('applyForm').style.display   = 'none';
+    document.getElementById('result').style.display      = 'block';
+  }
+
+  function resetForm() {
+    document.getElementById('applyForm').reset();
+    document.getElementById('submitBtn').textContent = 'Submit Application';
+    document.getElementById('applyForm').style.display = 'block';
+    document.getElementById('result').style.display    = 'none';
+  }
+</script>
+</body>
+</html>
