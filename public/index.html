@@ -10,22 +10,22 @@
 
     body {
       min-height: 100vh;
+      background: #f5f5f5;
+      color: #1a1a1a;
+      font-family: 'Inter', sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 60px 24px;
-      font-family: 'Inter', sans-serif;
-      color: #1a1a1a;
-      background: #f5f5f5;
     }
 
     h1 {
-      text-align: center;
-      margin-bottom: 40px;
       font-size: 24px;
       font-weight: 600;
       letter-spacing: 2px;
       color: #4a9b6f;
+      text-align: center;
+      margin-bottom: 40px;
     }
 
     form {
@@ -38,12 +38,12 @@
     }
 
     .section {
-      text-transform: uppercase;
       font-size: 10px;
       font-weight: 600;
       letter-spacing: 2px;
+      text-transform: uppercase;
       color: #4a9b6f;
-      border-bottom: 1px solid #ccc;
+      border-bottom: 1px solid #333;
       padding-bottom: 8px;
       margin: 24px 0 16px;
     }
@@ -67,6 +67,7 @@
     input {
       width: 100%;
       padding: 9px 12px;
+      background: #f5f5f5;
       border: 1px solid #e0e0e0;
       border-radius: 6px;
       color: #1a1a1a;
@@ -75,19 +76,25 @@
       outline: none;
     }
 
+    input:focus { border-color: #4a9b6f; }
+    input:disabled { color: #aaa; }
+    input::placeholder { color: #aaa; }
+    input:invalid:not(:placeholder-shown) { border-color: #c87e7e; }
+
     button[type="submit"] {
       width: 100%;
       margin-top: 28px;
       padding: 13px;
-      cursor: pointer;
-      border-radius: 6px;
-      border: 1px solid #4a9b6f;;
+      background: transparent;
+      border: 1px solid #4a9b6f;
       color: #4a9b6f;
+      font-family: 'Inter', sans-serif;
       font-size: 12px;
       font-weight: 600;
       letter-spacing: 2px;
       text-transform: uppercase;
-      background: transparent;
+      cursor: pointer;
+      border-radius: 6px;
     }
 
     button[type="submit"].loading { opacity: 0.5; pointer-events: none; }
@@ -101,26 +108,41 @@
       width: 100%;
       max-width: 520px;
       text-align: center;
-    }   
+    }
 
     #resultIcon { font-size: 44px; display: block; margin-bottom: 16px; }
 
-    #resultTitle { font-size: 20px; margin-bottom: 12px; }
+    #resultTitle {
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
 
     #resultTitle.approved { color: #4a9b6f; }
     #resultTitle.review   { color: #e8c96a; }
     #resultTitle.denied   { color: #c87e7e; }
 
-    #resultMessage { font-size: 15px; line-height: 1.6; color: #666; margin-bottom: 28px; }
+    #resultMessage {
+      font-size: 15px;
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
 
-.back-btn {
-  padding: 9px 22px;
-  cursor: pointer;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  background: transparent;
-}
-
+    .back-btn {
+      background: transparent;
+      border: 1px solid #e0e0e0;
+      color: #666;
+      padding: 9px 22px;
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-radius: 6px;
+    }
   </style>
 </head>
 <body>
@@ -150,11 +172,11 @@
     <div class="row">
       <div class="field">
         <label>Date of Birth</label>
-        <input type="text" id="birth_date" placeholder="YYYY-MM-DD" required />
+        <input type="text" id="birth_date" placeholder="YYYY-MM-DD" pattern="\d{4}-\d{2}-\d{2}" title="Format: YYYY-MM-DD" required />
       </div>
       <div class="field">
         <label>Social Security No.</label>
-        <input type="text" id="document_ssn" placeholder="123456789" maxlength="9" required />
+        <input type="text" id="document_ssn" placeholder="123456789" pattern="\d{9}" maxlength="9" title="9 digits, no dashes" required />
       </div>
     </div>
 
@@ -177,20 +199,21 @@
       </div>
       <div class="field">
         <label>State</label>
-        <input type="text" id="address_state" placeholder="NY" maxlength="2" required />
+        <input type="text" id="address_state" placeholder="NY" pattern="[A-Za-z]{2}" maxlength="2" title="2-letter state code" required />
       </div>
     </div>
 
     <div class="row">
       <div class="field">
         <label>ZIP Code</label>
-        <input type="text" id="address_postal_code" placeholder="10001" required />
+        <input type="text" id="address_postal_code" placeholder="10001" pattern="\d{5}" maxlength="5" title="5-digit ZIP code" required />
       </div>
       <div class="field">
         <label>Country</label>
         <input type="text" value="US" disabled />
       </div>
     </div>
+
     <button type="submit" id="submitBtn">Submit Application</button>
 
   </form>
@@ -204,9 +227,9 @@
 
 <script>
   const outcomes = {
-    'Approved':      { icon: '✅', title: 'Approved',      message: 'Your account has been created.',              css: 'approved' },
-    'Manual Review': { icon: '🔍', title: 'Under Review',  message: 'We will be in touch shortly.',                css: 'review'   },
-    'Deny':          { icon: '❌', title: 'Denied',         message: 'Sorry, your application was not successful.', css: 'denied'   }
+    'Approved':      { icon: '✅', title: 'Approved',      message: 'Success! Your account has been created.',           css: 'approved' },
+    'Manual Review': { icon: '🔍', title: 'Under Review',  message: "Thanks for submitting, we'll be in touch shortly.", css: 'review'   },
+    'Deny':          { icon: '❌', title: 'Denied',         message: 'Sorry, your application was not successful.',       css: 'denied'   }
   };
 
   document.getElementById('applyForm').addEventListener('submit', async function(e) {
@@ -242,9 +265,10 @@
   });
 
   function showResult(outcome) {
-    const content = outcomes[outcome] || { icon: '⚠️', title: 'Something Went Wrong', message: 'Please try again.', css: 'denied' };
+    const content = outcomes[outcome] || { icon: '⚠️', title: 'Something Went Wrong', message: 'Please try again or contact support for assistance.', css: 'denied' };
     document.getElementById('resultIcon').textContent    = content.icon;
     document.getElementById('resultTitle').textContent   = content.title;
+    document.getElementById('resultTitle').className     = content.css;
     document.getElementById('resultMessage').textContent = content.message;
     document.getElementById('applyForm').style.display   = 'none';
     document.getElementById('result').style.display      = 'block';
@@ -258,6 +282,6 @@
     document.getElementById('applyForm').style.display = 'block';
     document.getElementById('result').style.display    = 'none';
   }
-</script>  
+</script>
 </body>
 </html>
